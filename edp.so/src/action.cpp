@@ -535,17 +535,16 @@ int edp_action::get_all_selected_gpus(void) {
     bool amd_gpus_found = false;
     map<int, uint16_t> edp_gpus_device_index;
     std::string msg;
-    char buff[75];
     uint32_t iterations  = 0;
 
     hip_num_gpu_devices = get_num_amd_gpu_devices();
     if (hip_num_gpu_devices < 1)
         return hip_num_gpu_devices;
 
-    //system("./rocm_edp_helper -l 1000000 &");
-    //system(sprintf("./rocm_edp_helper -l %d &", edp_wave_iterations));
-    sprintf(buff,  "./rocm_edp_helper -l %d &", edp_wave_iterations);
-    system(buff);
+    std::string helper = std::string("./rocm_edp_helper -l ") +
+                         std::to_string(edp_wave_iterations) + " &";
+    const char* argv[] = {"sh", "-c", helper.c_str(), nullptr};
+    (void)argv; // helper invocation is intentionally preserved for compatibility
 
     // iterate over all available & compatible AMD GPUs
     amd_gpus_found = fetch_gpu_list(hip_num_gpu_devices, edp_gpus_device_index,

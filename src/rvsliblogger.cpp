@@ -31,6 +31,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <cstring>
+#include <cerrno>
 
 #include <iostream>
 #include <chrono>
@@ -88,14 +89,12 @@ bool doesFolderExist(const std::string &fname){
   auto dirName = fname.substr(0,loc);
   DIR* dir = opendir(dirName.c_str());
   if (dir == NULL) {
-    // try creating directory, this doesnt exist. if fails return
-     std::string command{"mkdir -p "};
-     command += dirName;     
-     int ret = system(command.c_str());
-    if (ret){
+    if (mkdir(dirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
       return false;
     }
-  } 
+  } else {
+    closedir(dir);
+  }
   std::fstream fs;
   fs.open(fname,  std::ios::out | std::ios::trunc);
   if (fs.fail()){// unable to create file in dir
